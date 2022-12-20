@@ -8,8 +8,8 @@ spec:
       params:
         - name: CONCURRENT_PIPELINE_RUN_SEARCH_FILTER
           value: $(context.pipeline.name)
-        - name: TASK_NAME_IN_PIPELINE
-          value: wait-for-concurrent-pipeline-runs
+        - name: CURRENT_PIPELINE_RUN
+          value: $(context.pipelineRun.name)
       taskRef:
         kind: Task
         name: wait-for-concurrent-pipeline-runs
