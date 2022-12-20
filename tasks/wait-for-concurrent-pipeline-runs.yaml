@@ -21,6 +21,11 @@ spec:
         
         # OBTENDO LISTA DE TODOS OS PIPELINESRUNS E FILTRANDO PELO "$(params.CONCURRENT_PIPELINE_RUN_SEARCH_FILTER)" E STATUS RUNNING
         PIPELINE_RUNS_LIST=$(oc get pipelinerun --no-headers --sort-by={metadata.creationTimestamp} -o=custom-columns=":.metadata.name,:.metadata.creationTimestamp,:.status.conditions[0].reason" | grep $CONCURRENT_PIPELINE_RUN_SEARCH_FILTER | grep "Running")
+
+        # MOSTRANDO NA TELA A $PIPELINE_RUNS_LIST
+        echo "[TASK-INFO] Atual fila de PipelineRuns:"
+        echo "$PIPELINE_RUNS_LIST"
+        echo ""
         
         # A PARTIR DA LISTA CRIADA ANTERIORMENTE, OBTENDO ÍNDICE DO ATUAL PIPELINERUN E O ANTERIOR A ELE (PIPELINERUN CONCORRENTE A QUEM ELE DEVE ESPERAR)
         CURRENT_PIPELINE_RUN_INDEX=$(awk "/$CURRENT_PIPELINE_RUN/{ print NR; exit }" <<< $PIPELINE_RUNS_LIST)
@@ -28,18 +33,18 @@ spec:
         
         # INTERROMPENDO SCRIPT (SEM CÓDIGO DE ERRO) CASO NÃO EXISTA UM PIPELINERUN CONCORRENTE
         if [[ $TO_WAIT_PIPELINE_RUN_INDEX -lt "1" ]]; then
-        echo "[TASK-INFO]: Nenhum PipelineRun concorrente foi encontrado."
+        echo "[TASK-INFO] Nenhum PipelineRun concorrente foi encontrado."
         exit 0; fi
         
         # OBTENDO NOME DO PIPELINE RUN CONCORRENTE AO QUAL DEVE-SE AGUARDAR
         TO_WAIT_PIPELINE_RUN=$(awk '{ print $1 }' <<< $(sed -n ${TO_WAIT_PIPELINE_RUN_INDEX}p <<< $PIPELINE_RUNS_LIST))
-        echo "[TASK-INFO]: Esse PipelineRun só irá continuar após o estado do PipelineRun ["$TO_WAIT_PIPELINE_RUN"] for diferente de Running."
+        echo "[TASK-INFO] Esse PipelineRun só irá continuar após o estado do PipelineRun ["$TO_WAIT_PIPELINE_RUN"] for diferente de Running."
         
         # ESPERANDO O PIPELINE RUN CONCORRENTE AO QUAL DEVE-SE AGUARDAR ENCERRAR AS SUAS ATIVIDADES
         CURRENT_STATUS=Running
         while [[ $CURRENT_STATUS == Running ]]; do
         CURRENT_STATUS=$(echo -n $(oc get pipelinerun $TO_WAIT_PIPELINE_RUN -o=custom-columns=":status.conditions[0].reason"))
-        echo "[TASK-INFO]: O estado atual do PipelineRun ["$TO_WAIT_PIPELINE_RUN"] é "$CURRENT_STATUS
+        echo "[TASK-INFO] O estado atual do PipelineRun ["$TO_WAIT_PIPELINE_RUN"] é "$CURRENT_STATUS
         sleep 10; done
 
-        echo "[TASK-INFO]: Estado diferente de Running foi alcançado, continuando com a execução desse PipelineRun..."
+        echo "[TASK-INFO] Estado diferente de Running foi alcançado, continuando com a execução desse PipelineRun..."
