@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: blue-pipeline
+spec:
+  tasks:
+    - name: wait-for-concurrent-pipeline-runs
+      params:
+        - name: CONCURRENT_PIPELINE_RUN_SEARCH_FILTER
+          value: $(context.pipeline.name)
+        - name: CURRENT_PIPELINE_RUN
+          value: $(context.pipelineRun.name)
+      taskRef:
+        kind: Task
+        name: wait-for-concurrent-pipeline-runs
+
+    - name: wait-a-few-seconds
+      taskRef:
+        kind: Task
+        name: wait-a-few-seconds
+      runAfter:
+        - wait-for-concurrent-pipeline-runs

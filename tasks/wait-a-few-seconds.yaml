@@ -1,0 +1,16 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: wait-a-few-seconds
+spec:
+  steps:
+    - name: wait-a-few-seconds
+      image: 'docker.io/ubuntu:22.04'
+      resources: {}
+      script: |
+        #!/bin/bash
+
+        echo "This is just a demo purpose Task that will wait for a few seconds to you have time to see wait-for-concurrent-pipeline-runs Task doing it work."
+
+        echo "Wait a few seconds..."
+        sleep 20
